@@ -1,0 +1,26 @@
+{
+  "name": "test-e2e",
+  "version": "1.0.0",
+  "description": "Las pruebas E2E son potencialmente la categoría de pruebas más útil, porque prueban el sistema a través de la misma interfaz que usan los usuarios reales.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test --project chromium",
+    "test:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Miguel565/test-e2e.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Miguel565/test-e2e/issues"
+  },
+  "homepage": "https://github.com/Miguel565/test-e2e#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^24.2.1"
+  }
+}
