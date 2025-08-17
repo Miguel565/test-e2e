@@ -37,7 +37,7 @@ describe('Blog app', () => {
             await expect(errorDiv).toHaveCSS('color', 'rgb(255, 0, 0)')
             await expect(page.getByText('Porgas D. Ace logged in')).not.toBeVisible()
         })
-        
+
         describe('When logged in', () => {
             test('create a new blog', async ({ page }) => {
                 await loginWith(page, 'ace', 'puño de fuego')
@@ -50,6 +50,29 @@ describe('Blog app', () => {
 
                 // Verifica que el nuevo blog aparece en la lista
                 await expect(page.getByText('Nuevo Blog de Prueba')).toBeVisible({ timeout: 10000 })
+            })
+
+            test('edit likes of a blog', async ({ page }) => {
+                await loginWith(page, 'ace', 'puño de fuego')
+
+                // Crear un blog para editar
+                await page.getByText('create new blog').click()
+                await expect(page.locator('#blog-form')).toBeVisible({ timeout: 10000 })
+                await createNewBlog(page, 'Blog para editar likes', 'Autor', 'https://ejemplo.com/edit')
+                await expect(page.getByText('Blog para editar likes')).toBeVisible({ timeout: 10000 })
+
+                // Mostrar detalles del blog (puede requerir un botón 'view' o similar)
+                await page.getByText('view').click()
+                // Espera a que el campo de likes esté visible
+                const likesLocator = page.getByTestId('likes')
+                await expect(likesLocator).toBeVisible({ timeout: 10000 })
+
+                // Editar los likes (puede ser un botón 'like' o un campo editable)
+                const likeButton = page.getByTestId('like-button')
+                await likeButton.click()
+
+                // Verifica que los likes aumentaron (asume que el valor inicial es 0)
+                await expect(likesLocator).toHaveText('1', { timeout: 10000 })
             })
         })
     })
