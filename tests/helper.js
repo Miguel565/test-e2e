@@ -1,5 +1,5 @@
 const loginWith = async (page, username, password) => {
-    await page.getByRole('button', { name: 'login' })
+    await page.getByRole('button', { name: 'login' }).click()
     await page.waitForLoadState('domcontentloaded')
 
     await page.getByTestId('username').waitFor({ state: 'visible', timeout: 5000 })

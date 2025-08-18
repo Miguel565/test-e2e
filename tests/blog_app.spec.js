@@ -15,7 +15,7 @@ describe('Blog app', () => {
     })
 
     test('login form is shown', async ({ page }) => {
-        page.getByRole('button', { name: 'login' })
+        page.getByRole('button', { name: 'login' }).click()
         await page.waitForLoadState('domcontentloaded')
         const loginForm = page.locator('#form')
         await expect(loginForm).toBeVisible({ timeout: 10000 })
@@ -73,6 +73,30 @@ describe('Blog app', () => {
 
                 // Verifica que los likes aumentaron (asume que el valor inicial es 0)
                 await expect(likesLocator).toHaveText('1', { timeout: 10000 })
+            })
+
+            test('user can delete their own blog', async ({ page }) => {
+                await loginWith(page, 'ace', 'puño de fuego')
+
+                // Crear un blog para eliminar
+                await page.getByText('create new blog').click()
+                await expect(page.locator('#blog-form')).toBeVisible({ timeout: 10000 })
+                await createNewBlog(page, 'Blog para eliminar', 'Autor', 'https://ejemplo.com/delete')
+                await expect(page.getByText('Blog para eliminar')).toBeVisible({ timeout: 10000 })
+
+                // Mostrar detalles del blog (puede requerir un botón 'view')
+                await page.getByText('view').click()
+
+                // Manejar el diálogo de confirmación al eliminar
+                await page.once('dialog', async dialog => {
+                    await dialog.accept(); // Confirmar eliminación
+                });
+
+                // Haz clic en el botón de eliminar
+                await page.getByText('delete').click()
+
+                // Verifica que el blog ya no aparece en la lista
+                await expect(page.getByText('Blog para eliminar')).not.toBeVisible({ timeout: 10000 })
             })
         })
     })
