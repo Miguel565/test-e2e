@@ -11,6 +11,13 @@ describe('Blog app', () => {
                 password: 'puño de fuego'
             }
         })
+        await request.post('/api/users', {
+            data: {
+                name: 'Roronoa Zoro',
+                username: 'zoro',
+                password: 'tres espadas'
+            }
+        })
         await page.goto('/')
     })
 
@@ -49,6 +56,7 @@ describe('Blog app', () => {
                 await createNewBlog(page, 'Nuevo Blog de Prueba', 'Author de Prueba', 'https://ejemplo.com/blog')
 
                 // Verifica que el nuevo blog aparece en la lista
+                await expect(page.getByText('blog')).toBeVisible({ timeout: 10000 })
                 await expect(page.getByText('Nuevo Blog de Prueba')).toBeVisible({ timeout: 10000 })
             })
 
@@ -59,6 +67,7 @@ describe('Blog app', () => {
                 await page.getByText('create new blog').click()
                 await expect(page.locator('#blog-form')).toBeVisible({ timeout: 10000 })
                 await createNewBlog(page, 'Blog para editar likes', 'Autor', 'https://ejemplo.com/edit')
+                await expect(page.getByText('blog')).toBeVisible({ timeout: 10000 })
                 await expect(page.getByText('Blog para editar likes')).toBeVisible({ timeout: 10000 })
 
                 // Mostrar detalles del blog (puede requerir un botón 'view' o similar)
@@ -75,29 +84,57 @@ describe('Blog app', () => {
                 await expect(likesLocator).toHaveText('1', { timeout: 10000 })
             })
 
-            test('user can delete their own blog', async ({ page }) => {
-                await loginWith(page, 'ace', 'puño de fuego')
+            describe('deleting a blog', () => {
+                test('user can delete their own blog', async ({ page }) => {
+                    await loginWith(page, 'ace', 'puño de fuego')
 
-                // Crear un blog para eliminar
-                await page.getByText('create new blog').click()
-                await expect(page.locator('#blog-form')).toBeVisible({ timeout: 10000 })
-                await createNewBlog(page, 'Blog para eliminar', 'Autor', 'https://ejemplo.com/delete')
-                await expect(page.getByText('Blog para eliminar')).toBeVisible({ timeout: 10000 })
+                    // Crear un blog para eliminar
+                    await page.getByText('create new blog').click()
+                    await expect(page.locator('#blog-form')).toBeVisible({ timeout: 10000 })
+                    await createNewBlog(page, 'Blog para eliminar', 'Autor', 'https://ejemplo.com/delete')
 
-                // Mostrar detalles del blog (puede requerir un botón 'view')
-                await page.getByText('view').click()
+                    // Verifica la lista de todos los blogs
+                    await expect(page.getByText('blog')).toBeVisible({ timeout: 10000 })
+                    await expect(page.getByText('Blog para eliminar')).toBeVisible({ timeout: 10000 })
 
-                // Manejar el diálogo de confirmación al eliminar
-                await page.once('dialog', async dialog => {
-                    await dialog.accept(); // Confirmar eliminación
-                });
+                    // Mostrar detalles del blog (puede requerir un botón 'view')
+                    await page.getByText('view').click()
 
-                // Haz clic en el botón de eliminar
-                await page.getByText('delete').click()
+                    // Manejar el diálogo de confirmación al eliminar
+                    await page.once('dialog', async dialog => {
+                        await dialog.accept(); // Confirmar eliminación
+                    });
 
-                // Verifica que el blog ya no aparece en la lista
-                await expect(page.getByText('Blog para eliminar')).not.toBeVisible({ timeout: 10000 })
+                    // Haz clic en el botón de eliminar
+                    await page.getByText('remove').click()
+
+                    // Verifica que el blog ya no aparece en la lista
+                    await expect(page.getByText('Blog para eliminar')).not.toBeVisible({ timeout: 10000 })
+                })
+
+                test('user cannot delete another user\'s blog', async ({ page }) => {
+                    await loginWith(page, 'ace', 'puño de fuego')
+
+                    // Crear un blog para eliminar
+                    await page.getByText('create new blog').click()
+                    await expect(page.locator('#blog-form')).toBeVisible({ timeout: 10000 })
+                    await createNewBlog(page, 'Blog para eliminar', 'Author', 'http://www.ejemplo.com/delete')
+
+                    // Cierra sesion del usuario "ace"
+                    await page.getByText('Logout').click()
+
+                    // Inicia sesion con usuario "zoro"
+                    await loginWith(page, 'zoro', 'tres espadas')
+
+                    // Verifica la lista de blogs
+                    await expect(page.getByText('blog')).toBeVisible({ timeout: 10000 })
+                    await expect(page.getByText('Blog para eliminar')).toBeVisible({ timeout: 10000 })
+                    await page.getByText('view').click()
+
+                    // Verifica la visibilidad del botón eliminar
+                    await expect(page.getByText('remove')).not.toBeVisible({ timeout: 10000 })
+                })
             })
         })
     })
-})
+}) 
