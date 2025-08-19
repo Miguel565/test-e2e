@@ -22,6 +22,7 @@ const createNewBlog = async (page, title, author, url) => {
 
     // Envía el formulario
     await page.getByText('create').click()
+    await page.getByText(title).waitFor()
 }
 
 export { loginWith, createNewBlog }
